@@ -1,0 +1,79 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+@import "tailwindcss";
+
+img {
+  @apply w-full h-full object-cover;
+}
+
+section {
+  @apply w-full min-h-screen flex flex-col items-center justify-center gap-[2.5em] text-[#e3e3db] bg-[#0f0f0f];
+  overflow: hidden;
+}
+
+.profile-images {
+  @apply flex items-center justify-center;
+  width: max-content;
+}
+
+.img {
+  @apply relative w-[70px] h-[70px] p-[5px] cursor-pointer;
+  will-change: width, height;
+}
+
+.img img {
+  border-radius: 0.5rem;
+}
+
+.profile-names {
+  @apply w-full h-[20rem];
+  overflow: hidden;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.name h1 {
+  @apply absolute w-full text-center uppercase text-[20rem] font-extrabold text-[#f93535];
+  line-height: 1;
+  letter-spacing: -0.05rem;
+  font-family: "Barlow Condensed";
+  user-select: none;
+  transform: translateY(100%);
+}
+
+.name .default h1 {
+  color: #e3e3db;
+  transform: translateY(-100%);
+}
+
+.name h1 .letter {
+  position: relative;
+  transform: translateY(0%);
+  will-change: transform;
+}
+
+@media (max-width: 900px) {
+  section {
+    flex-direction: column-reverse;
+  }
+
+  .profile-images {
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 90%;
+  }
+
+  .img {
+    width: 60px;
+    height: 60px;
+    padding: 2.5px;
+  }
+
+  .name h1 {
+    font-size: 4rem;
+    letter-spacing: 0rem;
+  }
+
+  .profile-names {
+    height: 4rem;
+  }
+}
