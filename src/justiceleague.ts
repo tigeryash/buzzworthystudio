@@ -4,7 +4,8 @@ export const justiceleague = [
         name: "Superman",
         image: "/superman.jpg",
         mainColor: "#C80000",
-        secondaryColor: "#FFEB00"
+        secondaryColor: "#FFEB00",
+        textSize: "17rem"
     },
     {
         id:1,
@@ -25,21 +26,24 @@ export const justiceleague = [
         name: "Green Lantern",
         image: "/greenlantern.jpg",
         mainColor: "#00A064",
-        secondaryColor: "#000000"
+        secondaryColor: "#000000",
+        textSize: "8rem"
     },
     {
         id:4,
         name: "Wonder Woman",
         image: "/wonderwoman.webp",
         mainColor: "#CB973B",
-        secondaryColor: "#A41B30"
+        secondaryColor: "#A41B30",
+        textSize: "8rem"
     },
     {
         id:5,
         name: "Martian Manhunter",
         image: "/martianmanhunter.webp",
         mainColor: "#E20025",
-        secondaryColor: "#00A064"
+        secondaryColor: "#00A064",
+        textSize: "8rem"
     },
     {
         id:6,
@@ -60,7 +64,8 @@ export const justiceleague = [
         name: "Captain Marvel",
         image: "/shazam.webp",
         mainColor: "#FFAA00",
-        secondaryColor: "#FF0033"
+        secondaryColor: "#FF0033",
+        textSize: "8rem"
     }
 ]
     

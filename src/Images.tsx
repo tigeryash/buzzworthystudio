@@ -2,17 +2,22 @@ import { justiceleague } from "./justiceleague";
 import gsap from "gsap";
 
 const Images = ({
-  setHoveredHero,
+  setIsHoveringContainer,
+  setIsAnimating,
+  setNextHero,
 }: {
-  setHoveredHero: (id: number | null) => void;
+  setIsHoveringContainer: (hovering: boolean) => void;
+  setIsAnimating: (animating: boolean) => void;
+  setNextHero: (id: number) => void;
 }) => {
   const handleMouseEnter = (
     e: React.MouseEvent<HTMLDivElement>,
     id: number
   ) => {
     const img = e.currentTarget;
-
-    setHoveredHero(id);
+    setIsHoveringContainer(true);
+    setIsAnimating(true);
+    setNextHero(id);
 
     gsap.to(img, {
       width: 140,
@@ -24,7 +29,6 @@ const Images = ({
 
   const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
     const img = e.currentTarget;
-    setHoveredHero(null);
 
     gsap.to(img, {
       width: 70,
@@ -34,8 +38,12 @@ const Images = ({
     });
   };
 
+  const handleMouseLeaveAll = () => {
+    setIsHoveringContainer(false);
+  };
+
   return (
-    <div className="profile-images">
+    <div className="profile-images" onMouseLeave={handleMouseLeaveAll}>
       {justiceleague.map((hero) => (
         <div
           key={hero.id}
