@@ -53,14 +53,14 @@ const Names = ({
 
   useGSAP(() => {
     if (isMobile || !defaultRef.current || !heroRef.current) return;
-    const newHeroSplit = new SplitText(heroRef.current, {
-      type: "chars",
-    });
-    newHeroSplit.chars.forEach((char) => char.classList.add("letter"));
 
-    const defaultLetters = defaultRef.current.querySelectorAll(".letter");
+    // Create new SplitText
+    const heroSplit = new SplitText(heroRef.current, { type: "chars" });
+    heroSplit.chars.forEach((char) => char.classList.add("letter"));
+
+    // Get the newly created letters
     const heroLetters = heroRef.current.querySelectorAll(".letter");
-    gsap.killTweensOf([...defaultLetters, ...heroLetters]);
+    const defaultLetters = defaultRef.current.querySelectorAll(".letter");
 
     gsap.to(defaultLetters, {
       y: isHoveringContainer ? "-125%" : "0%",
@@ -71,23 +71,16 @@ const Names = ({
         from: "center",
       },
     });
-
-    if (nextHero !== null && nextHero !== activeHero) {
+    if (nextHero !== null) {
+      // New hero is being hovered
       setIsAnimating(true);
 
       // If there's an active hero, animate it out first
       if (activeHero !== null) {
-        gsap.to(heroLetters, {
-          y: "100%",
-          opacity: 0,
-          duration: 0.5,
-          ease: "power2.in",
-          onComplete: () => {
-            setActiveHero(nextHero);
-            setNextHero(null);
-            // Animate new hero in
-            animateHeroIn();
-          },
+        animateHeroOut(() => {
+          setActiveHero(nextHero);
+          setNextHero(null);
+          animateHeroIn();
         });
       } else {
         // No active hero, just animate in
@@ -95,37 +88,60 @@ const Names = ({
         setNextHero(null);
         animateHeroIn();
       }
-    } else if (activeHero !== null && !isHoveringContainer) {
-      // Animate out when leaving container
-      gsap.to(heroLetters, {
-        y: "100%",
-        opacity: 0,
-        duration: 0.5,
-        ease: "power2.in",
-        onComplete: () => {
-          setActiveHero(null);
-          setIsAnimating(false);
-        },
+    }
+    // If no nextHero but still in container, check if we need to hide active hero
+    else if (!isHoveringContainer && activeHero !== null) {
+      animateHeroOut(() => {
+        setActiveHero(null);
       });
     }
   }, [activeHero, isHoveringContainer, isAnimating, isMobile]);
 
   const animateHeroIn = () => {
-    const heroLetters = heroRef.current?.querySelectorAll(".letter");
-    if (heroLetters) {
-      gsap.fromTo(
-        heroLetters,
-        { y: "50%", opacity: 0 },
-        {
-          y: "0%",
-          opacity: 1,
-          duration: 0.75,
-          ease: "power3.out",
-          stagger: { each: 0.02 },
-          onComplete: () => setIsAnimating(false),
-        }
-      );
+    if (!heroRef.current) return;
+
+    // Clean up any existing split text
+    const existingSplit = SplitText.getSplit(heroRef.current);
+    if (existingSplit) existingSplit.revert();
+
+    // Create new split text
+    const heroSplit = new SplitText(heroRef.current, { type: "chars" });
+    heroSplit.chars.forEach((char) => char.classList.add("letter"));
+
+    // Get letters and set initial state
+    const heroLetters = heroRef.current.querySelectorAll(".letter");
+    gsap.set(heroLetters, { y: "100%", opacity: 0 });
+
+    gsap.to(heroLetters, {
+      y: "-100%",
+      opacity: 1,
+      duration: 0.75,
+      ease: "power4.out",
+      stagger: { each: 0.025, from: "center" },
+      onComplete: () => setIsAnimating(false),
+    });
+  };
+
+  const animateHeroOut = (onComplete?: () => void) => {
+    if (!heroRef.current) return;
+
+    const heroLetters = heroRef.current.querySelectorAll(".letter");
+    if (heroLetters.length === 0) {
+      onComplete();
+      return;
     }
+
+    gsap.to(heroLetters, {
+      y: "-100%",
+      opacity: 1,
+      duration: 0.75,
+      ease: "power4.out",
+      stagger: { each: 0.025, from: "center" },
+      onComplete: () => {
+        setIsAnimating(false);
+        if (onComplete) onComplete();
+      },
+    });
   };
 
   return (

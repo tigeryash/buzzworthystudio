@@ -3,12 +3,10 @@ import gsap from "gsap";
 
 const Images = ({
   setIsHoveringContainer,
-  setIsAnimating,
   setNextHero,
 }: {
   setIsHoveringContainer: (hovering: boolean) => void;
-  setIsAnimating: (animating: boolean) => void;
-  setNextHero: (id: number) => void;
+  setNextHero: (id: number | null) => void;
 }) => {
   const handleMouseEnter = (
     e: React.MouseEvent<HTMLDivElement>,
@@ -16,7 +14,6 @@ const Images = ({
   ) => {
     const img = e.currentTarget;
     setIsHoveringContainer(true);
-    setIsAnimating(true);
     setNextHero(id);
 
     gsap.to(img, {
@@ -40,6 +37,7 @@ const Images = ({
 
   const handleMouseLeaveAll = () => {
     setIsHoveringContainer(false);
+    setNextHero(null);
   };
 
   return (

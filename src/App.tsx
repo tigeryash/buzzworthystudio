@@ -11,7 +11,6 @@ function App() {
     <section className="team">
       <Images
         setIsHoveringContainer={setIsHoveringContainer}
-        setIsAnimating={setIsAnimating}
         setNextHero={setNextHero}
       />
       <Names
