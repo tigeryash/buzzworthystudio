@@ -15,7 +15,6 @@ const Images = ({
     const img = e.currentTarget;
     setIsHoveringContainer(true);
     setNextHero(id);
-
     gsap.to(img, {
       width: 140,
       height: 140,

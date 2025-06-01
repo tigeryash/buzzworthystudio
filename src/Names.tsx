@@ -10,22 +10,19 @@ const Names = ({
   activeHero,
   nextHero,
   isHoveringContainer,
-  isAnimating,
-  setIsAnimating,
   setActiveHero,
   setNextHero,
 }: {
   activeHero: number | null;
   nextHero: number | null;
   isHoveringContainer: boolean;
-  isAnimating: boolean;
-  setIsAnimating: (animating: boolean) => void;
   setActiveHero: (id: number | null) => void;
   setNextHero: (id: number | null) => void;
 }) => {
   const defaultRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [displayedHero, setDisplayedHero] = useState<number | null>(null);
 
   useEffect(() => {
     const isMobile = window.innerWidth < 900;
@@ -51,15 +48,18 @@ const Names = ({
     }
   }, []);
 
+  useEffect(() => {
+    if (nextHero !== null && activeHero === null) {
+      setDisplayedHero(nextHero);
+    }
+    if (displayedHero === activeHero) {
+    }
+  }, [nextHero, activeHero]);
+
   useGSAP(() => {
     if (isMobile || !defaultRef.current || !heroRef.current) return;
 
-    // Create new SplitText
-    const heroSplit = new SplitText(heroRef.current, { type: "chars" });
-    heroSplit.chars.forEach((char) => char.classList.add("letter"));
-
     // Get the newly created letters
-    const heroLetters = heroRef.current.querySelectorAll(".letter");
     const defaultLetters = defaultRef.current.querySelectorAll(".letter");
 
     gsap.to(defaultLetters, {
@@ -71,74 +71,61 @@ const Names = ({
         from: "center",
       },
     });
-    if (nextHero !== null) {
-      // New hero is being hovered
-      setIsAnimating(true);
 
-      // If there's an active hero, animate it out first
-      if (activeHero !== null) {
-        animateHeroOut(() => {
-          setActiveHero(nextHero);
-          setNextHero(null);
-          animateHeroIn();
-        });
-      } else {
-        // No active hero, just animate in
-        setActiveHero(nextHero);
-        setNextHero(null);
-        animateHeroIn();
-      }
+    if (activeHero === null && nextHero !== null) {
+      setActiveHero(nextHero);
+      animateHeroIn();
+      setNextHero(null);
     }
-    // If no nextHero but still in container, check if we need to hide active hero
-    else if (!isHoveringContainer && activeHero !== null) {
+    if (activeHero !== null && !isHoveringContainer && nextHero !== null) {
       animateHeroOut(() => {
         setActiveHero(null);
       });
     }
-  }, [activeHero, isHoveringContainer, isAnimating, isMobile]);
+    if (activeHero !== null && activeHero !== displayedHero) {
+      animateHeroOut(() => {
+        setActiveHero(nextHero);
+        setNextHero(null);
+        animateHeroIn();
+      });
+    }
+  }, [activeHero, isHoveringContainer, isMobile]);
 
   const animateHeroIn = () => {
     if (!heroRef.current) return;
-
-    // Clean up any existing split text
-    const existingSplit = SplitText.getSplit(heroRef.current);
-    if (existingSplit) existingSplit.revert();
-
-    // Create new split text
-    const heroSplit = new SplitText(heroRef.current, { type: "chars" });
-    heroSplit.chars.forEach((char) => char.classList.add("letter"));
-
-    // Get letters and set initial state
-    const heroLetters = heroRef.current.querySelectorAll(".letter");
-    gsap.set(heroLetters, { y: "100%", opacity: 0 });
+    const split = SplitText.create(heroRef.current);
+    const heroLetters = split.chars;
+    console.log("heroLetters", heroLetters);
+    if (heroLetters.length === 0) {
+      return;
+    }
 
     gsap.to(heroLetters, {
-      y: "-100%",
-      opacity: 1,
+      y: "-110%",
       duration: 0.75,
       ease: "power4.out",
       stagger: { each: 0.025, from: "center" },
-      onComplete: () => setIsAnimating(false),
+      onComplete: () => {
+        console.log("animateHeroIn onComplete");
+      },
     });
   };
 
   const animateHeroOut = (onComplete?: () => void) => {
     if (!heroRef.current) return;
-
-    const heroLetters = heroRef.current.querySelectorAll(".letter");
+    const split = SplitText.create(heroRef.current);
+    const heroLetters = split.chars;
+    console.log("heroLetters", heroLetters);
     if (heroLetters.length === 0) {
-      onComplete();
       return;
     }
 
     gsap.to(heroLetters, {
-      y: "-100%",
-      opacity: 1,
+      y: "0%",
       duration: 0.75,
       ease: "power4.out",
       stagger: { each: 0.025, from: "center" },
       onComplete: () => {
-        setIsAnimating(false);
         if (onComplete) onComplete();
       },
     });
@@ -159,16 +146,18 @@ const Names = ({
         <h1
           ref={heroRef}
           className={`text-[${
-            activeHero !== null ? justiceleague[activeHero].textSize : "12rem"
+            displayedHero !== null
+              ? justiceleague[displayedHero].textSize
+              : "12rem"
           }]`}
           style={{
             color:
-              activeHero !== null
-                ? justiceleague[activeHero].mainColor
+              displayedHero !== null
+                ? justiceleague[displayedHero].mainColor
                 : "#e3e3db",
           }}
         >
-          {activeHero !== null ? justiceleague[activeHero].name : ""}
+          {displayedHero !== null ? justiceleague[displayedHero].name : ""}
         </h1>
       </div>
     </div>
