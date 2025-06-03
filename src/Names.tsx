@@ -2,7 +2,13 @@ import { useGSAP } from "@gsap/react";
 import { justiceleague } from "./justiceleague";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 gsap.registerPlugin(SplitText);
 
@@ -23,6 +29,9 @@ const Names = ({
 }: namesProps) => {
   const defaultRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
+  const heroSplitRef = useRef<SplitText | null>(null);
+  const defaultSplitRef = useRef<SplitText | null>(null);
+
   const [isMobile, setIsMobile] = useState(false);
   const [displayedHero, setDisplayedHero] = useState<number | null>(null);
 
@@ -92,33 +101,46 @@ const Names = ({
     });
   }, [activeHero, isHoveringContainer, isMobile]);
 
-  const animateHeroIn = () => {
+  const heroAnimationComplete = useCallback(() => {
+    setNextHero(null);
+    setActiveHero(displayedHero);
+  }, [displayedHero, setActiveHero, setNextHero]);
+
+  // Animation functions
+  const animateHeroIn = useCallback(() => {
     if (!heroRef.current || nextHero === null) return;
-    heroRef.current.innerHTML = justiceleague[nextHero].name;
-    heroRef.current.style.color =
-      justiceleague[nextHero].mainColor?.toString() || "#e3e3db";
-    heroRef.current.style.fontSize =
-      justiceleague[nextHero].textSize?.toString() || "12rem";
-    const heroSplit = new SplitText(heroRef.current, {
-      type: "chars",
-    });
-    const heroLetters = heroSplit.chars;
-    console.log("heroLetters", heroLetters);
-    if (heroLetters.length === 0) {
-      return;
+
+    // Cleanup previous animation
+    if (heroSplitRef.current?.revert) {
+      heroSplitRef.current.revert();
     }
 
-    gsap.to(heroLetters, {
-      y: "-100%",
-      duration: 0.75,
-      ease: "power4.out",
-      stagger: { each: 0.025, from: "center" },
-      onComplete: () => {
-        setNextHero(null);
-        setActiveHero(displayedHero);
-      },
-    });
-  };
+    // Set hero content and styles
+    const hero = justiceleague[nextHero];
+    heroRef.current.innerHTML = hero.name;
+    heroRef.current.style.color = hero.mainColor || "#e3e3db";
+    heroRef.current.style.fontSize = hero.textSize || "12rem";
+
+    // Force reflow
+    void heroRef.current.offsetHeight;
+
+    // Create new animation
+    heroSplitRef.current = new SplitText(heroRef.current, { type: "chars" });
+    const { chars } = heroSplitRef.current;
+
+    if (chars.length > 0) {
+      gsap.to(chars, {
+        y: "-100%",
+        duration: 0.75,
+        ease: "power4.out",
+        stagger: {
+          each: 0.025,
+          from: "center",
+        },
+        onComplete: heroAnimationComplete,
+      });
+    }
+  }, [nextHero, heroAnimationComplete]);
 
   const animateHeroOut = (onComplete?: () => void) => {
     if (!heroRef.current || displayedHero === null) return;
@@ -126,18 +148,23 @@ const Names = ({
       type: "chars",
     });
     const heroLetters = heroSplit.chars;
-    console.log("heroLetters", heroLetters);
 
-    gsap.to(heroLetters, {
-      y: "0%",
-      duration: 0.75,
-      ease: "power4.out",
-
-      stagger: { each: 0.025, from: "center" },
-      onComplete: () => {
-        if (onComplete) onComplete();
+    gsap.fromTo(
+      heroLetters,
+      {
+        y: "0%",
       },
-    });
+      {
+        y: "100%",
+        duration: 0.75,
+        ease: "power4.out",
+
+        stagger: { each: 0.025, from: "center" },
+        onComplete: () => {
+          if (onComplete) onComplete();
+        },
+      }
+    );
   };
 
   return (
